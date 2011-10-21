@@ -46,3 +46,4 @@ queryPhrase dbPath tsMVar = do
       HE.renderTemplate ts'' "search"
     _          -> HE.renderTemplate ts' "search"
   maybe ST.pass (writeBS . toByteString . fst) contents
+{-# INLINE queryPhrase #-}

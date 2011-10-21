@@ -36,14 +36,15 @@ run pNum dPath tPath = do
       conf = setPort pNum mempty
   tsMVar <- newMVar ts
   httpServe conf (site dPath tsMVar)
+{-# INLINE run #-}
 
 -- | Main url mapping.
 site :: FilePath -> MVar (TemplateState Snap) -> Snap ()
 site db tsMVar =
-  -- FS.fileServe "./"
   FS.serveDirectory "./"
   <|> route [("", C.queryPhrase db tsMVar)]
   <|> templateServe tsMVar
+{-# INLINE site #-}  
 
 -- | Serves templates with state in MVar.
 templateServe :: MVar (TemplateState Snap) -> Snap ()
@@ -52,3 +53,4 @@ templateServe tsMVar = do
   urlPath <- return . maybe "search" id . urlDecode . C8.pack =<< FS.getSafePath
   maybe pass (writeBS . toByteString . fst) =<< HE.renderTemplate ts urlPath
   modifyResponse $ setContentType "text/html"
+{-# INLINE templateServe #-}

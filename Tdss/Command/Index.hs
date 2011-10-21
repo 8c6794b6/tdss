@@ -14,7 +14,7 @@ import Control.Concurrent (newMVar, putMVar, takeMVar)
 import Data.Int (Int64)
 import Data.List (isSuffixOf)
 import System.Directory (createDirectoryIfMissing)
-import qualified Data.ByteString.Char8 as C8
+import qualified Data.ByteString.UTF8 as U8
 
 import System.Directory.Tree (readDirectoryWith)
 import Text.HTML.TagSoup (Tag(..), (~==), innerText, parseTags, sections)
@@ -41,15 +41,17 @@ run dbPath targetPath = do
            contents <- readFile path
            putStrLn $ show n ++ ":" ++ path
            let bodyString = bodyText contents
-           IDB.put idb (fromIntegral n :: Int64) (C8.pack bodyString)
+           IDB.put idb (fromIntegral n :: Int64) (U8.fromString bodyString)
            HDB.put hdb ("url:" ++ show n) path
-           HDB.put hdb ("text:" ++ show n) bodyString
+           HDB.put hdb ("text:" ++ show n) (U8.fromString bodyString)
            putMVar mVar (n+1)
       else return ()
   HDB.close hdb
   putStrLn "done"
+{-# INLINE run #-}  
 
 bodyText :: String -> String
 bodyText html = parse html
   where
     parse = innerText . join . sections (~== (TagOpen "body" [])) . parseTags
+{-# INLINE bodyText #-}

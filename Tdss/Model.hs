@@ -14,15 +14,9 @@ import Data.ByteString ( ByteString )
 import System.FilePath ((</>))
 import qualified Data.ByteString.Char8 as B
 
-
-import Control.Monad.Trans ( liftIO )
-import Database.TokyoCabinet
-    ( TCM
-    , HDB )
-import Database.TokyoDystopia
-    ( TDM
-    , IDB
-    , OpenMode(..) )
+import Control.Monad.Trans (liftIO)
+import Database.TokyoCabinet (TCM, HDB)
+import Database.TokyoDystopia (TDM, IDB, OpenMode(..))
 import qualified Database.TokyoCabinet as TC
 import qualified Database.TokyoDystopia as TD
 import qualified Database.TokyoDystopia.IDB as IDB
@@ -30,10 +24,12 @@ import qualified Database.TokyoDystopia.IDB as IDB
 -- | Path to TokyoDystopia index database.
 tdDBPath :: FilePath -> FilePath
 tdDBPath root = root </> "casket"
+{-# INLINE tdDBPath #-}
 
 -- | Path to TokyoCabinet key value storage.
 tcDBPath :: FilePath -> FilePath
 tcDBPath root = root </> "db.tch"
+{-# INLINE tcDBPath #-}
 
 -- | Data type for search result.
 --
@@ -51,6 +47,7 @@ search dbRoot query = TD.runTDM $ do
   ids <- liftIO $ IDB.search2 db (B.unpack query)
   TD.close db >> TD.del db
   return $ fmap (B.pack . show) ids
+{-# INLINE search #-}
 
 -- | Retrieve document data from tokyocabinet database.
 getResults :: FilePath -> Int -> Int -> [ByteString] -> IO [SearchResult]
@@ -67,3 +64,4 @@ getResults dbRoot lim offset keys = TC.runTCM $ do
      return $ case (url,txt) of
                 (Just u, Just t) -> SearchResult u t
                 _                -> SearchResult B.empty B.empty
+{-# INLINE getResults #-}
