@@ -12,7 +12,8 @@ module Tdss.Command.Serve where
 
 import Control.Applicative ((<|>))
 import Control.Concurrent (MVar, newMVar, readMVar)
-import Data.Monoid
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath
 import qualified Data.ByteString.Char8 as C8
 
 import Blaze.ByteString.Builder (toByteString)
@@ -33,10 +34,17 @@ run :: Int      -- ^ Port number
 run pNum dPath tPath = do
   ets <- HE.loadTemplates tPath (HE.emptyTemplateState "")
   let ts = either error id ets
-      conf = setPort pNum mempty
+      conf = setPort pNum defaultConfig
+  maybeMakeLogDir conf
   tsMVar <- newMVar ts
   httpServe conf (site dPath tsMVar)
 {-# INLINE run #-}
+
+maybeMakeLogDir :: Config m a -> IO ()
+maybeMakeLogDir conf = case getAccessLog conf of
+  Just (Just logf) -> createDirectoryIfMissing True $ fst (splitFileName logf)
+  _                -> return ()
+{-# INLINE maybeMakeLogDir #-}
 
 -- | Main url mapping.
 site :: FilePath -> MVar (TemplateState Snap) -> Snap ()
@@ -44,7 +52,7 @@ site db tsMVar =
   FS.serveDirectory "./"
   <|> route [("", C.queryPhrase db tsMVar)]
   <|> templateServe tsMVar
-{-# INLINE site #-}  
+{-# INLINE site #-}
 
 -- | Serves templates with state in MVar.
 templateServe :: MVar (TemplateState Snap) -> Snap ()
