@@ -3,15 +3,40 @@ tdss - tokyo dystopia snap search
 
 Summary
 -------
-Simple full text search indexer and web ui for html files with
-tokyodystopia and snap web framework.
+Simple full text indexer and web ui for html files with tokyodystopia
+and snap web framework. Supports unicode text input.
 
 Commands overview
 -----------------
-For detailed argument, run `tdss --help`.
+For detail, run `tdss --help`.
 
 * `tdss index`
     * Index html files under given directory, and write indexed data.
 
 * `tdss serve`
     * Run server program with given template path and db path.
+
+Quick example
+-------------
+
+### Indexing html files
+
+    $ ls
+    documents templates
+    $ ls documents
+    foo.html  bar.html  buzz/html
+    $ tdss index -d db -t documents
+    Start indexing ...
+    0:documents/foo.html
+    1:documents/bar.html
+    2:documents/buzz.html
+    done
+
+### Serving html files
+
+    $ ls
+    db  templates
+    $ tdss serve -p 8000 -t templates -d db
+    Listening on http://0.0.0.0:8000
+
+Access to http://0.0.0.0:8000 from web browser, start searching.
